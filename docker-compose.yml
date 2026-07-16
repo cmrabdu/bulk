@@ -1,0 +1,39 @@
+# Bulk — déploiement isolé sur server13 (réseau + volume dédiés, ports en 127.0.0.1,
+# Caddy expose bulk.cmrabdu.com par-dessus). Calqué sur la convention des autres apps.
+services:
+  backend:
+    build: ./backend
+    container_name: bulk-backend
+    restart: unless-stopped
+    env_file: ./backend/.env          # secrets : SESSION_SECRET, APP_USERNAME, APP_PASSWORD
+    environment:                       # surcharges prod (priment sur .env)
+      ENV: production
+      DATABASE_URL: sqlite:////app/data/bulk.db
+      COOKIE_SECURE: "true"
+      TZ: Europe/Paris
+      PUBLIC_BASE_URL: https://bulk.cmrabdu.com
+    volumes:
+      - bulk-data:/app/data            # DB SQLite persistante
+    ports:
+      - "127.0.0.1:8798:8000"
+    networks: [bulk-net]
+    mem_limit: 512m
+    cpus: 0.75
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: bulk-frontend
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8799:80"
+    networks: [bulk-net]
+    mem_limit: 128m
+    cpus: 0.5
+
+volumes:
+  bulk-data:
+
+networks:
+  bulk-net:
+    driver: bridge

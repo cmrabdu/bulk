@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+
+# Node
+node_modules/
+dist/
+
+# Secrets & données
+.env
+backend/.env
+frontend/.env
+*.db
+*.db-wal
+*.db-shm
+data/
+
+# OS / éditeur
+.DS_Store
+*.log

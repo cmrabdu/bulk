@@ -1,0 +1,23 @@
+# Bloc à insérer dans /etc/caddy/Caddyfile puis `sudo systemctl reload caddy`.
+# camera=(self) : nécessaire au scan code-barres (getUserMedia) côté front.
+bulk.cmrabdu.com {
+	encode zstd gzip
+
+	header {
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		Permissions-Policy "camera=(self), microphone=(), geolocation=()"
+		-X-Powered-By
+		-Server
+	}
+
+	# API -> backend ; tout le reste -> SPA frontend. (mêmes ports que docker-compose.yml)
+	handle /api/* {
+		reverse_proxy localhost:8798
+	}
+	handle {
+		reverse_proxy localhost:8799
+	}
+}
