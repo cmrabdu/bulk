@@ -1,8 +1,11 @@
 """Client OpenFoodFacts : recherche texte + lookup code-barres, normalisés en `FoodHit`.
 
-On ne garde que ce dont l'app a besoin : kcal + protéines pour 100 g. Les produits sans
-ces valeurs sont écartés (inutiles pour le tracking). Cache mémoire court sur les codes-barres.
+OFF est instable : `cgi/search.pl` renvoie par intermittence des pages d'erreur HTML
+(429/5xx) au lieu du JSON. On encaisse ça avec : (1) retries + backoff, (2) validation
+stricte (status 200 + content-type JSON), (3) cache des recherches réussies servi même
+périmé quand OFF flanche. On ne garde que les produits avec kcal + protéines /100 g.
 """
+import asyncio
 import time
 from typing import Optional
 
@@ -16,11 +19,37 @@ FIELDS = (
     "image_small_url,image_url,nutriments,serving_quantity,nutriscore_grade"
 )
 
-_client = httpx.AsyncClient(timeout=10.0, headers={"User-Agent": settings.off_user_agent})
+_client = httpx.AsyncClient(timeout=12.0, headers={"User-Agent": settings.off_user_agent})
 
-# Cache mémoire des codes-barres (OFF est parfois lent / limité).
+# Cache mémoire : code-barres (par code) et recherches (par "q|page").
 _barcode_cache: dict[str, tuple[float, Optional[FoodHit]]] = {}
-_CACHE_TTL = 86400.0
+_search_cache: dict[str, tuple[float, list[FoodHit]]] = {}
+_CACHE_TTL = 86400.0        # code-barres : 24 h
+_SEARCH_TTL = 600.0         # recherche : 10 min (frais) ; sert plus vieux en secours
+
+
+def _json_or_none(r: httpx.Response) -> Optional[dict]:
+    """Renvoie le JSON seulement si OFF a répondu proprement (sinon page d'erreur HTML)."""
+    ct = r.headers.get("content-type", "")
+    if r.status_code == 200 and ct.startswith("application/json"):
+        try:
+            return r.json()
+        except ValueError:
+            return None
+    return None
+
+
+async def _get_json(url: str, params: dict, attempts: int = 6) -> Optional[dict]:
+    for i in range(attempts):
+        try:
+            r = await _client.get(url, params=params)
+            data = _json_or_none(r)
+            if data is not None:
+                return data
+        except httpx.HTTPError:
+            pass
+        await asyncio.sleep(min(0.4 * (i + 1), 1.5))  # backoff court
+    return None
 
 
 def _kcal_per_100g(nutr: dict) -> Optional[float]:
@@ -70,48 +99,54 @@ def _normalize(p: dict) -> Optional[FoodHit]:
 
 
 async def search(q: str, page: int = 1) -> list[FoodHit]:
-    # Recherche plein-texte via l'endpoint legacy cgi/search.pl : l'API v2 /search ne fait
-    # pas de full-text fiable (renvoie parfois du non-JSON). Le lookup code-barres, lui,
-    # utilise bien l'API v2 (voir barcode()).
-    url = f"{settings.off_base}/cgi/search.pl"
-    params = {
-        "search_terms": q,
-        "search_simple": 1,
-        "action": "process",
-        "json": 1,
-        "page_size": 20,
-        "page": max(1, page),
-        "fields": FIELDS,
-        "sort_by": "unique_scans_n",  # les plus scannés d'abord (popularité)
-    }
-    r = await _client.get(url, params=params)
-    r.raise_for_status()
-    data = r.json()
-    out: list[FoodHit] = []
-    for p in data.get("products", []):
-        hit = _normalize(p)
-        if hit:
-            out.append(hit)
+    key = f"{q.lower().strip()}|{page}"
+    now = time.time()
+    cached = _search_cache.get(key)
+    if cached and now - cached[0] < _SEARCH_TTL:
+        return cached[1]
+
+    data = await _get_json(
+        f"{settings.off_base}/cgi/search.pl",
+        {
+            "search_terms": q,
+            "search_simple": 1,
+            "action": "process",
+            "json": 1,
+            "page_size": 20,
+            "page": max(1, page),
+            "fields": FIELDS,
+            "sort_by": "unique_scans_n",  # les plus scannés d'abord (popularité)
+        },
+    )
+    if data is None:
+        # OFF a flanché : sert le cache même périmé plutôt que rien.
+        return cached[1] if cached else []
+
+    out = [h for h in (_normalize(p) for p in data.get("products", [])) if h]
+    if out:
+        _search_cache[key] = (now, out)
     return out
 
 
 async def barcode(code: str) -> Optional[FoodHit]:
-    cached = _barcode_cache.get(code)
     now = time.time()
+    cached = _barcode_cache.get(code)
     if cached and now - cached[0] < _CACHE_TTL:
         return cached[1]
 
     url = f"{settings.off_base}/api/v2/product/{code}.json"
-    r = await _client.get(url, params={"fields": FIELDS})
-    if r.status_code == 404:
-        _barcode_cache[code] = (now, None)
-        return None
-    r.raise_for_status()
-    data = r.json()
-    if data.get("status") == 0 or "product" not in data:
-        _barcode_cache[code] = (now, None)
-        return None
-
-    result = _normalize(data["product"])
-    _barcode_cache[code] = (now, result)
-    return result
+    for i in range(5):
+        try:
+            r = await _client.get(url, params={"fields": FIELDS})
+            if r.status_code == 404:
+                _barcode_cache[code] = (now, None)
+                return None
+            data = _json_or_none(r)
+            if data is not None:
+                result = None if (data.get("status") == 0 or "product" not in data) else _normalize(data["product"])
+                _barcode_cache[code] = (now, result)
+                return result
+        except httpx.HTTPError:
+            pass
+        await asyncio.sleep(min(0.4 * (i + 1), 1.5))
+    raise RuntimeError("OpenFoodFacts indisponible")

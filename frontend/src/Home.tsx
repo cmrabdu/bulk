@@ -50,6 +50,7 @@ export default function Home() {
   const [confetti, setConfetti] = useState<Piece[]>([])
   const [add, setAdd] = useState<AddState>(emptyAdd)
   const [results, setResults] = useState<FoodHit[]>([])
+  const [searching, setSearching] = useState(false)
   const [scanMsg, setScanMsg] = useState('')
   const celTO = useRef<number | undefined>(undefined)
   const hydrated = useRef(false)
@@ -75,9 +76,12 @@ export default function Home() {
   useEffect(() => {
     if (screen !== 'add' || add.stage !== 'search') return
     const q = add.query.trim()
-    if (q.length < 2) { setResults([]); return }
+    if (q.length < 2) { setResults([]); setSearching(false); return }
+    setSearching(true)
     const t = window.setTimeout(async () => {
-      try { setResults((await api.searchFood(q)).results) } catch { setResults([]) }
+      try { setResults((await api.searchFood(q)).results) }
+      catch { setResults([]) }
+      finally { setSearching(false) }
     }, 300)
     return () => window.clearTimeout(t)
   }, [add.query, add.stage, screen])
@@ -479,6 +483,7 @@ export default function Home() {
                     <button onClick={openManual} style={css(`background:none;border:none;cursor:pointer;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;letter-spacing:1px;color:#9A9A94;text-decoration:underline;text-underline-offset:3px`)}>SAISIE MANUELLE</button>
                   </div>
                   <div style={css(`font-family:'Space Mono',monospace;font-size:10px;font-weight:700;letter-spacing:2px;color:#8A8A85;margin-bottom:8px`)}>RÉSULTATS</div>
+                  {searching && <div style={css(`text-align:center;padding:20px 0;font-family:'Space Mono',monospace;font-size:11px;color:#9A9A94;letter-spacing:1px;animation:pulse 1s infinite`)}>RECHERCHE…</div>}
                   {results.map((r) => (
                     <button key={r.off_id} onClick={() => selectFood(r)} className="hov-lime" style={css('width:100%;display:flex;align-items:center;gap:12px;background:#fff;border:2px solid #0A0A0A;border-radius:2px;padding:10px;margin-bottom:8px;cursor:pointer;text-align:left')}>
                       {r.image_url
@@ -491,7 +496,7 @@ export default function Home() {
                       <span style={css('font-family:Anton;font-size:20px;color:#0A0A0A')}>+</span>
                     </button>
                   ))}
-                  {add.query.trim().length >= 2 && results.length === 0 && <div style={css(`text-align:center;padding:24px 0;font-family:'Space Mono',monospace;font-size:11px;color:#B5B5B0`)}>AUCUN RÉSULTAT · essaie la saisie manuelle</div>}
+                  {!searching && add.query.trim().length >= 2 && results.length === 0 && <div style={css(`text-align:center;padding:24px 0;font-family:'Space Mono',monospace;font-size:11px;color:#B5B5B0`)}>AUCUN RÉSULTAT · réessaie ou saisie manuelle</div>}
                 </>
               )}
 
