@@ -19,9 +19,11 @@ const calcGoals = (s: Settings) => {
 }
 const parisTime = (iso: string) =>
   new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' })
+// "Aujourd'hui" au fuseau de Paris (aligné sur le groupement des jours côté backend).
+const parisTodayStr = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Paris' })
 const noon = (d: string) => new Date(d + 'T12:00:00')
 const dayLabel = (d: string) => {
-  const diff = Math.round((noon(new Date().toISOString().slice(0, 10)).getTime() - noon(d).getTime()) / 86400000)
+  const diff = Math.round((noon(parisTodayStr()).getTime() - noon(d).getTime()) / 86400000)
   if (diff === 0) return 'AUJ.'
   if (diff === 1) return 'HIER'
   return noon(d).toLocaleDateString('fr-FR', { weekday: 'short' }).replace('.', '').toUpperCase() + '.'
@@ -133,7 +135,7 @@ export default function Home() {
 
   const entryRows = entries.slice().reverse()
   const headerMeta = screen === 'today'
-    ? new Date().toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' }).toUpperCase()
+    ? new Date().toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short', timeZone: 'Europe/Paris' }).toUpperCase()
     : screen === 'history' ? 'BILAN' : 'PROFIL'
 
   // ---- actions ----
@@ -296,7 +298,7 @@ export default function Home() {
               <div style={css('height:3px;background:#0A0A0A;margin:2px 0 0')} />
               <div style={css('display:flex;align-items:center;justify-content:space-between;padding:14px 16px 8px')}>
                 <span style={css(`font-family:'Space Mono',monospace;font-size:11px;font-weight:700;letter-spacing:2px;color:#0A0A0A`)}>REPAS DU JOUR</span>
-                <span style={css(`font-family:'Space Mono',monospace;font-size:11px;font-weight:700;letter-spacing:1px;color:#8A8A85`)}>{entries.length} ENTRÉES</span>
+                <span style={css(`font-family:'Space Mono',monospace;font-size:11px;font-weight:700;letter-spacing:1px;color:#8A8A85`)}>{entries.length} {entries.length === 1 ? 'ENTRÉE' : 'ENTRÉES'}</span>
               </div>
 
               <div style={css('padding:0 16px 120px')}>
@@ -430,8 +432,8 @@ export default function Home() {
           )}
         </div>
 
-        {/* FAB */}
-        {screen !== 'add' && (
+        {/* FAB — seulement sur Aujourd'hui (éviter le chevauchement du contenu ailleurs) */}
+        {screen === 'today' && (
           <button onClick={openAdd} className="fabpress" style={css('position:absolute;right:18px;bottom:82px;width:64px;height:64px;background:#C6FF00;border:3px solid #0A0A0A;border-radius:3px;box-shadow:5px 5px 0 #0A0A0A;cursor:pointer;z-index:40;display:flex;align-items:center;justify-content:center;transition:transform .08s,box-shadow .08s')}>
             <span style={css('font-family:Anton;font-size:46px;line-height:.7;color:#0A0A0A;margin-top:-3px')}>+</span>
           </button>
