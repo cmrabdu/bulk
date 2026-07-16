@@ -1,9 +1,11 @@
-import { useEffect, useRef, useState, type ChangeEvent, type CSSProperties } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState, type ChangeEvent, type CSSProperties } from 'react'
 import { api, ApiError } from './api'
 import { useAuth } from './auth'
 import { css } from './css'
-import BarcodeScanner from './BarcodeScanner'
 import type { DaySummary, Entry, FoodHit, Settings } from './types'
+
+// Lazy : le scanner (lib ZXing, ~400 Ko) n'est chargé qu'à l'ouverture du scan.
+const BarcodeScanner = lazy(() => import('./BarcodeScanner'))
 
 // ---------- helpers ----------
 const num = (e: ChangeEvent<HTMLInputElement>) => {
@@ -504,7 +506,9 @@ export default function Home() {
               {add.stage === 'scan' && (
                 <>
                   <div style={css('border:3px solid #0A0A0A;background:#0A0A0A;border-radius:2px;height:260px;position:relative;overflow:hidden;margin-bottom:14px')}>
-                    <BarcodeScanner onDetected={onScanDetected} onError={() => setScanMsg('Caméra indisponible — saisis le code à la main')} />
+                    <Suspense fallback={null}>
+                      <BarcodeScanner onDetected={onScanDetected} onError={() => setScanMsg('Caméra indisponible — saisis le code à la main')} />
+                    </Suspense>
                     <div style={css('position:absolute;left:8%;right:8%;height:3px;background:#C6FF00;box-shadow:0 0 12px #C6FF00;animation:scanline 1.1s ease-in-out infinite alternate')} />
                     <div style={css('position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:60%;height:36%;border:2px dashed #C6FF00;border-radius:3px')} />
                     <div style={css(`position:absolute;bottom:14px;left:0;right:0;text-align:center;font-family:'Space Mono',monospace;font-size:11px;color:#C6FF00;letter-spacing:1px;animation:pulse 1s infinite`)}>ANALYSE DU CODE-BARRES…</div>
