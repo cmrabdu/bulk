@@ -40,9 +40,10 @@ Voir [`deploy/DEPLOY.md`](deploy/DEPLOY.md).
 
 ## État
 - ✅ Backend complet (settings, journal, recherche/code-barres OFF, résumé/barres, historique, auth, stub Fitbit).
-- ✅ Frontend **de référence** fonctionnel (câblé à l'API).
-- ⏳ Design final (UI + barres gamifiées polies + login stylisé) via Claude Design — voir [`design/`](design/).
+- ✅ Frontend **néobrutaliste** (design Claude Design) intégré et câblé à l'API : login stylisé, barres gamifiées (gradient + marqueur d'objectif), confetti au franchissement, ajout par recherche / **scan code-barres caméra** (ZXing) / saisie manuelle, édition/suppression, historique, réglages auto/manuel.
 - ⏳ OAuth Fitbit réel (à brancher une fois en HTTPS).
+
+Design source : [`design/`](design/) (export Claude Design `.dc.html` + handoff).
 
 ## Licence
 MIT.

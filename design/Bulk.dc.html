@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{margin:0;background:#E4E4E0;font-family:Archivo,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#0A0A0A;text-decoration:none}a:hover{color:#0A0A0A}
+input,select,button{font-family:inherit;color:#0A0A0A}
+input:focus,select:focus{outline:none}
+::placeholder{color:#B5B5B0}
+.scr::-webkit-scrollbar{width:0;height:0}
+@keyframes shake{10%,90%{transform:translateX(-1px)}20%,80%{transform:translateX(2px)}30%,50%,70%{transform:translateX(-4px)}40%,60%{transform:translateX(4px)}}
+@keyframes flash{0%{opacity:0}16%{opacity:.85}100%{opacity:0}}
+@keyframes confetti{0%{transform:translate(0,0) rotate(0deg);opacity:1}100%{transform:translate(var(--tx),var(--ty)) rotate(var(--rot));opacity:0}}
+@keyframes scanline{0%{top:12%}100%{top:84%}}
+@keyframes slideUp{from{transform:translateY(103%)}to{transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes popIn{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+</style>
+</helmet>
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:22px;background:#E4E4E0">
+  <div style="width:390px;height:844px;background:#FAFAFA;border:3px solid #0A0A0A;border-radius:3px;position:relative;display:flex;flex-direction:column;overflow:hidden;box-shadow:12px 12px 0 rgba(10,10,10,.14)">
+
+    <!-- HEADER -->
+    <div style="height:52px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:3px solid #0A0A0A;background:#fff;z-index:20">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:15px;height:15px;background:#C6FF00;border:2px solid #0A0A0A"></div>
+        <span style="font-family:Anton;font-size:26px;letter-spacing:.5px;line-height:1">BULK</span>
+      </div>
+      <span style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;letter-spacing:1.5px;color:#0A0A0A">{{ headerMeta }}</span>
+    </div>
+
+    <!-- SCROLL CONTENT -->
+    <div class="scr" style="flex:1;overflow-y:auto;overflow-x:hidden;position:relative">
+
+      <!-- ============ AUJOURD'HUI ============ -->
+      <sc-if value="{{ isToday }}" hint-placeholder-val="{{ true }}">
+      <div style="padding:18px 16px 12px">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:14px">
+          <div style="width:9px;height:9px;background:#0A0A0A"></div>
+          <span style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;letter-spacing:2px;color:#0A0A0A">TABLEAU DE BORD · JOUR</span>
+        </div>
+
+        <div style="{{ celebrateStyle }}">
+        <sc-for list="{{ bars }}" as="bar" hint-placeholder-count="2">
+          <div style="margin-bottom:20px">
+            <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:7px">
+              <div style="display:flex;align-items:baseline">
+                <span style="font-family:Anton;font-size:56px;line-height:.78;letter-spacing:-1px;color:#0A0A0A">{{ bar.cur }}</span>
+                <span style="font-family:Anton;font-size:23px;line-height:1;color:#9A9A94;margin-left:5px">/{{ bar.goal }}</span>
+                <span style="font-family:'Space Mono',monospace;font-weight:700;font-size:12px;letter-spacing:1px;color:#0A0A0A;margin-left:7px">{{ bar.unit }}</span>
+              </div>
+              <sc-if value="{{ bar.over }}"><div style="background:#E10600;color:#fff;font-family:'Space Mono',monospace;font-weight:700;font-size:10px;letter-spacing:1px;padding:5px 9px;border:2px solid #0A0A0A">DÉPASSÉ !</div></sc-if>
+              <sc-if value="{{ bar.done }}"><div style="background:#C6FF00;color:#0A0A0A;font-family:'Space Mono',monospace;font-weight:700;font-size:10px;letter-spacing:1px;padding:5px 9px;border:2px solid #0A0A0A">ATTEINT ✓</div></sc-if>
+              <sc-if value="{{ bar.going }}"><div style="background:transparent;color:#8A8A85;font-family:'Space Mono',monospace;font-weight:700;font-size:10px;letter-spacing:1px;padding:5px 9px;border:2px solid #D8D8D3">EN COURS</div></sc-if>
+            </div>
+
+            <div style="position:relative;height:56px;border:3px solid #0A0A0A;background:#fff;overflow:hidden;border-radius:2px">
+              <div style="{{ bar.fillStyle }}">
+                <div style="position:absolute;top:0;left:0;height:100%;width:336px;background:linear-gradient(90deg,#FF2D2D 0%,#FF6A00 20%,#FFC400 42%,#C6FF00 60%,#C6FF00 82%,#FF3B1E 91%,#C00000 100%)"></div>
+              </div>
+              <div style="position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(90deg,transparent 0 32px,rgba(0,0,0,.09) 32px 33px)"></div>
+              <div style="position:absolute;top:-1px;bottom:-1px;left:258px;width:2px;background:#0A0A0A"></div>
+              <div style="position:absolute;top:4px;left:249px;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:7px solid #0A0A0A"></div>
+              <sc-if value="{{ bar.celebrating }}"><div style="position:absolute;inset:0;background:#C6FF00;mix-blend-mode:multiply;animation:flash .7s ease;pointer-events:none"></div></sc-if>
+            </div>
+
+            <div style="display:flex;justify-content:space-between;margin-top:6px">
+              <span style="font-family:'Space Mono',monospace;font-size:10px;font-weight:700;letter-spacing:2px;color:#0A0A0A">{{ bar.label }}</span>
+              <span style="font-family:'Space Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1px;color:#8A8A85">{{ bar.pctText }} · OBJ {{ bar.goal }}</span>
+            </div>
+          </div>
+        </sc-for>
+        </div>
+      </div>
+
+      <div style="height:3px;background:#0A0A0A;margin:2px 0 0"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 8px">
+        <span style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;letter-spacing:2px;color:#0A0A0A">REPAS DU JOUR</span>
+        <span style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;letter-spacing:1px;color:#8A8A85">{{ entryCount }} ENTRÉES</span>
+      </div>
+
+      <div style="padding:0 16px 120px">
+        <sc-for list="{{ entryRows }}" as="e" hint-placeholder-count="6">
+          <div style="display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #E7E7E2">
+            <div style="flex:1;min-width:0">
+              <div style="font-weight:700;font-size:15px;color:#0A0A0A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ e.name }}</div>
+              <div style="font-family:'Space Mono',monospace;font-size:11px;color:#9A9A94;margin-top:2px;letter-spacing:.5px">{{ e.qty }} · {{ e.time }}</div>
+            </div>
+            <div style="text-align:right;flex:none">
+              <div style="font-family:Anton;font-size:19px;line-height:.9;color:#0A0A0A">{{ e.kcal }}<span style="font-family:'Space Mono',monospace;font-size:9px;font-weight:700;color:#9A9A94;margin-left:2px">KCAL</span></div>
+              <div style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:#0A0A0A;margin-top:1px">P {{ e.prot }}g</div>
+            </div>
+            <button onClick="{{ e.onEdit }}" style="flex:none;width:30px;height:30px;border:2px solid #0A0A0A;background:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="background:#C6FF00">✎</button>
+            <button onClick="{{ e.onDelete }}" style="flex:none;width:30px;height:30px;border:2px solid #0A0A0A;background:#fff;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1" style-hover="background:#FF3B1E;color:#fff">✕</button>
+          </div>
+        </sc-for>
+        <sc-if value="{{ noEntries }}"><div style="text-align:center;padding:40px 0;font-family:'Space Mono',monospace;font-size:12px;color:#B5B5B0;letter-spacing:1px">AUCUNE ENTRÉE — APPUIE SUR +</div></sc-if>
+      </div>
+      </sc-if>
+
+      <!-- ============ HISTORIQUE ============ -->
+      <sc-if value="{{ isHistory }}" hint-placeholder-val="{{ true }}">
+      <div style="padding:18px 16px 120px">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:16px">
+          <div style="width:9px;height:9px;background:#0A0A0A"></div>
+          <span style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;letter-spacing:2px;color:#0A0A0A">7 DERNIERS JOURS</span>
+        </div>
+        <sc-for list="{{ historyRows }}" as="d" hint-placeholder-count="5">
+          <div style="border:3px solid #0A0A0A;background:#fff;border-radius:2px;padding:13px 14px;margin-bottom:12px;box-shadow:4px 4px 0 rgba(10,10,10,.10)">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+              <div>
+                <div style="font-family:Anton;font-size:22px;line-height:.9;color:#0A0A0A">{{ d.label }}</div>
+                <div style="font-family:'Space Mono',monospace;font-size:10px;color:#9A9A94;letter-spacing:1px;margin-top:2px">{{ d.date }}</div>
+              </div>
+              <sc-if value="{{ d.ok }}"><div style="width:38px;height:38px;background:#C6FF00;border:3px solid #0A0A0A;display:flex;align-items:center;justify-content:center;font-family:Anton;font-size:22px;color:#0A0A0A">✓</div></sc-if>
+              <sc-if value="{{ d.warn }}"><div style="width:38px;height:38px;background:#FF3B1E;border:3px solid #0A0A0A;display:flex;align-items:center;justify-content:center;font-family:Anton;font-size:22px;color:#fff">!</div></sc-if>
+            </div>
+            <div style="margin-bottom:9px">
+              <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+                <span style="font-family:'Space Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;color:#0A0A0A">CAL</span>
+                <span style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:#0A0A0A">{{ d.kText }}</span>
+              </div>
+              <div style="position:relative;height:15px;border:2px solid #0A0A0A;background:#fff;overflow:hidden;border-radius:1px">
+                <div style="{{ d.kFill }}"><div style="position:absolute;top:0;left:0;height:100%;width:284px;background:linear-gradient(90deg,#FF2D2D 0%,#FF6A00 22%,#FFC400 44%,#C6FF00 62%,#C6FF00 84%,#FF3B1E 92%,#C00000 100%)"></div></div>
+                <div style="position:absolute;top:0;bottom:0;left:218px;width:2px;background:#0A0A0A"></div>
+              </div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+                <span style="font-family:'Space Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1.5px;color:#0A0A0A">PROT</span>
+                <span style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:#0A0A0A">{{ d.pText }}</span>
+              </div>
+              <div style="position:relative;height:15px;border:2px solid #0A0A0A;background:#fff;overflow:hidden;border-radius:1px">
+                <div style="{{ d.pFill }}"><div style="position:absolute;top:0;left:0;height:100%;width:284px;background:linear-gradient(90deg,#FF2D2D 0%,#FF6A00 22%,#FFC400 44%,#C6FF00 62%,#C6FF00 84%,#FF3B1E 92%,#C00000 100%)"></div></div>
+                <div style="position:absolute;top:0;bottom:0;left:218px;width:2px;background:#0A0A0A"></div>
+              </div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      </sc-if>
+
+      <!-- ============ RÉGLAGES ============ -->
+      <sc-if value="{{ isSettings }}" hint-placeholder-val="{{ true }}">
+      <div style="padding:18px 16px 120px">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:16px">
+          <div style="width:9px;height:9px;background:#0A0A0A"></div>
+          <span style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;letter-spacing:2px;color:#0A0A0A">PROFIL & OBJECTIFS</span>
+        </div>
+
+        <!-- Objectifs calculés -->
+        <div style="border:3px solid #0A0A0A;background:#0A0A0A;border-radius:2px;padding:15px;margin-bottom:20px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <span style="font-family:'Space Mono',monospace;font-size:10px;font-weight:700;letter-spacing:2px;color:#C6FF00">OBJECTIFS DU JOUR</span>
+            <button onClick="{{ onToggleAuto }}" style="{{ autoBtnStyle }}">{{ autoLabel }}</button>
+          </div>
+          <div style="display:flex;gap:12px">
+            <div style="flex:1">
+              <div style="font-family:'Space Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1px;color:#8A8A85;margin-bottom:4px">CALORIES</div>
+              <div style="display:flex;align-items:baseline;gap:4px">
+                <input type="number" value="{{ settings.goalKcal }}" onChange="{{ onGoalKcal }}" style="width:96px;background:transparent;border:none;border-bottom:2px solid #444;font-family:Anton;font-size:38px;color:#fff;padding:0" />
+                <span style="font-family:'Space Mono',monospace;font-size:10px;color:#8A8A85">KCAL</span>
+              </div>
+            </div>
+            <div style="flex:1">
+              <div style="font-family:'Space Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1px;color:#8A8A85;margin-bottom:4px">PROTÉINES</div>
+              <div style="display:flex;align-items:baseline;gap:4px">
+                <input type="number" value="{{ settings.goalProt }}" onChange="{{ onGoalProt }}" style="width:64px;background:transparent;border:none;border-bottom:2px solid #444;font-family:Anton;font-size:38px;color:#fff;padding:0" />
+                <span style="font-family:'Space Mono',monospace;font-size:10px;color:#8A8A85">G</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <sc-for list="{{ measRows }}" as="m" hint-placeholder-count="4">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid #E7E7E2">
+            <span style="font-weight:600;font-size:14px;color:#0A0A0A">{{ m.label }}</span>
+            <div style="display:flex;align-items:center;gap:6px">
+              <input type="number" value="{{ m.value }}" onChange="{{ m.onChange }}" style="width:74px;border:2px solid #0A0A0A;background:#fff;padding:7px 9px;font-weight:700;font-size:15px;text-align:right;border-radius:1px" />
+              <span style="font-family:'Space Mono',monospace;font-size:10px;color:#9A9A94;width:32px">{{ m.unit }}</span>
+            </div>
+          </div>
+        </sc-for>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid #E7E7E2">
+          <span style="font-weight:600;font-size:14px;color:#0A0A0A">Sexe</span>
+          <div style="display:flex;border:2px solid #0A0A0A;border-radius:1px;overflow:hidden">
+            <button onClick="{{ onSexeH }}" style="{{ sexeHStyle }}">Homme</button>
+            <button onClick="{{ onSexeF }}" style="{{ sexeFStyle }}">Femme</button>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid #E7E7E2">
+          <span style="font-weight:600;font-size:14px;color:#0A0A0A">Activité</span>
+          <select value="{{ settings.activiteFactor }}" onChange="{{ onActivite }}" style="border:2px solid #0A0A0A;background:#fff;padding:7px 9px;font-weight:600;font-size:13px;border-radius:1px">
+            <option value="1.2">Sédentaire · 1.2</option>
+            <option value="1.375">Léger · 1.375</option>
+            <option value="1.45">Modéré · 1.45</option>
+            <option value="1.6">Actif · 1.6</option>
+            <option value="1.725">Intense · 1.725</option>
+          </select>
+        </div>
+
+        <!-- Fitbit -->
+        <div style="margin-top:22px;border:3px dashed #C8C8C3;background:#F2F2EF;border-radius:2px;padding:15px;display:flex;align-items:center;justify-content:space-between;opacity:.85">
+          <div>
+            <div style="font-family:Anton;font-size:20px;color:#B5B5B0;line-height:1">FITBIT</div>
+            <div style="font-family:'Space Mono',monospace;font-size:10px;color:#B5B5B0;margin-top:4px;letter-spacing:.5px">Synchro pas & dépense énergétique</div>
+          </div>
+          <div style="background:#C6FF00;color:#0A0A0A;font-family:'Space Mono',monospace;font-weight:700;font-size:10px;letter-spacing:1px;padding:6px 10px;border:2px solid #0A0A0A">BIENTÔT</div>
+        </div>
+      </div>
+      </sc-if>
+
+    </div>
+
+    <!-- FAB -->
+    <sc-if value="{{ showFab }}" hint-placeholder-val="{{ true }}">
+    <button onClick="{{ openAdd }}" style="position:absolute;right:18px;bottom:82px;width:64px;height:64px;background:#C6FF00;border:3px solid #0A0A0A;border-radius:3px;box-shadow:5px 5px 0 #0A0A0A;cursor:pointer;z-index:40;display:flex;align-items:center;justify-content:center;transition:transform .08s,box-shadow .08s" style-active="transform:translate(4px,4px);box-shadow:1px 1px 0 #0A0A0A">
+      <span style="font-family:Anton;font-size:46px;line-height:.7;color:#0A0A0A;margin-top:-3px">+</span>
+    </button>
+    </sc-if>
+
+    <!-- TAB BAR -->
+    <div style="height:66px;flex:none;display:flex;border-top:3px solid #0A0A0A;background:#fff;z-index:30">
+      <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3">
+        <button onClick="{{ t.onClick }}" style="flex:1;background:transparent;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:0;position:relative">
+          <div style="{{ t.dotStyle }}"></div>
+          <span style="{{ t.labelStyle }}">{{ t.label }}</span>
+          <sc-if value="{{ t.active }}"><div style="position:absolute;top:0;left:22%;right:22%;height:4px;background:#C6FF00"></div></sc-if>
+        </button>
+      </sc-for>
+    </div>
+
+    <!-- CONFETTI -->
+    <sc-if value="{{ celebrating }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;pointer-events:none;z-index:55;overflow:hidden">
+      <sc-for list="{{ confetti }}" as="c" hint-placeholder-count="0">
+        <div style="{{ c.style }}"></div>
+      </sc-for>
+    </div>
+    </sc-if>
+
+    <!-- ============ ADD OVERLAY ============ -->
+    <sc-if value="{{ isAdd }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;background:#FAFAFA;z-index:60;display:flex;flex-direction:column;animation:slideUp .32s cubic-bezier(.2,.9,.3,1)">
+      <div style="height:52px;flex:none;display:flex;align-items:center;gap:10px;padding:0 12px;border-bottom:3px solid #0A0A0A;background:#fff">
+        <button onClick="{{ add.onBack }}" style="width:34px;height:34px;border:2px solid #0A0A0A;background:#fff;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;border-radius:1px" style-hover="background:#C6FF00">‹</button>
+        <span style="font-family:Anton;font-size:19px;letter-spacing:.5px">{{ add.title }}</span>
+      </div>
+
+      <div class="scr" style="flex:1;overflow-y:auto;padding:16px">
+
+        <!-- SEARCH stage -->
+        <sc-if value="{{ add.isSearch }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;align-items:center;border:3px solid #0A0A0A;background:#fff;border-radius:2px;padding:0 12px;height:50px;margin-bottom:12px">
+            <span style="font-family:'Space Mono',monospace;font-weight:700;color:#0A0A0A;margin-right:8px">⌕</span>
+            <input value="{{ add.query }}" onChange="{{ add.onQuery }}" placeholder="Rechercher un aliment…" style="flex:1;border:none;background:transparent;font-size:15px;font-weight:500;height:100%" />
+          </div>
+          <button onClick="{{ add.onScan }}" style="width:100%;display:flex;align-items:center;gap:12px;background:#0A0A0A;border:3px solid #0A0A0A;border-radius:2px;padding:14px;cursor:pointer;margin-bottom:8px" style-active="transform:translateY(2px)">
+            <div style="width:34px;height:26px;background:repeating-linear-gradient(90deg,#C6FF00 0 2px,transparent 2px 4px,#C6FF00 4px 5px,transparent 5px 8px);border:2px solid #C6FF00"></div>
+            <div style="text-align:left">
+              <div style="font-family:Anton;font-size:17px;color:#fff;line-height:1">SCANNER UN CODE-BARRES</div>
+              <div style="font-family:'Space Mono',monospace;font-size:10px;color:#8A8A85;margin-top:2px">le plus rapide · 1 tap</div>
+            </div>
+          </button>
+          <div style="text-align:center;margin:10px 0 16px">
+            <button onClick="{{ add.onManual }}" style="background:none;border:none;cursor:pointer;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;letter-spacing:1px;color:#9A9A94;text-decoration:underline;text-underline-offset:3px">SAISIE MANUELLE</button>
+          </div>
+
+          <div style="font-family:'Space Mono',monospace;font-size:10px;font-weight:700;letter-spacing:2px;color:#8A8A85;margin-bottom:8px">RÉSULTATS</div>
+          <sc-for list="{{ add.results }}" as="r" hint-placeholder-count="5">
+            <button onClick="{{ r.onSelect }}" style="width:100%;display:flex;align-items:center;gap:12px;background:#fff;border:2px solid #0A0A0A;border-radius:2px;padding:10px;margin-bottom:8px;cursor:pointer;text-align:left" style-hover="background:#C6FF00">
+              <div style="width:44px;height:44px;flex:none;border:2px solid #0A0A0A;background:repeating-linear-gradient(45deg,#EDEDE9 0 5px,#F6F6F3 5px 10px);display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:8px;color:#9A9A94">IMG</div>
+              <div style="flex:1;min-width:0">
+                <div style="font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</div>
+                <div style="font-family:'Space Mono',monospace;font-size:10px;color:#9A9A94;margin-top:2px">{{ r.brand }} · {{ r.per100 }}</div>
+              </div>
+              <span style="font-family:Anton;font-size:20px;color:#0A0A0A">+</span>
+            </button>
+          </sc-for>
+          <sc-if value="{{ add.noResults }}"><div style="text-align:center;padding:24px 0;font-family:'Space Mono',monospace;font-size:11px;color:#B5B5B0">AUCUN RÉSULTAT · essaie la saisie manuelle</div></sc-if>
+        </sc-if>
+
+        <!-- SCAN stage -->
+        <sc-if value="{{ add.isScan }}" hint-placeholder-val="{{ false }}">
+          <div style="border:3px solid #0A0A0A;background:#0A0A0A;border-radius:2px;height:260px;position:relative;overflow:hidden;margin-bottom:14px">
+            <div style="position:absolute;left:8%;right:8%;height:3px;background:#C6FF00;box-shadow:0 0 12px #C6FF00;animation:scanline 1.1s ease-in-out infinite alternate"></div>
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:60%;height:36%;border:2px dashed #C6FF00;border-radius:3px"></div>
+            <div style="position:absolute;bottom:14px;left:0;right:0;text-align:center;font-family:'Space Mono',monospace;font-size:11px;color:#C6FF00;letter-spacing:1px;animation:pulse 1s infinite">ANALYSE DU CODE-BARRES…</div>
+          </div>
+          <div style="text-align:center;font-family:'Space Mono',monospace;font-size:11px;color:#9A9A94">Recherche dans la base OpenFoodFacts</div>
+        </sc-if>
+
+        <!-- DETAIL stage -->
+        <sc-if value="{{ add.isDetail }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:12px;border:3px solid #0A0A0A;background:#fff;border-radius:2px;padding:12px;margin-bottom:16px">
+            <div style="width:56px;height:56px;flex:none;border:2px solid #0A0A0A;background:repeating-linear-gradient(45deg,#EDEDE9 0 6px,#F6F6F3 6px 12px);display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:9px;color:#9A9A94">IMG</div>
+            <div>
+              <div style="font-family:Anton;font-size:20px;line-height:1">{{ add.selName }}</div>
+              <div style="font-family:'Space Mono',monospace;font-size:11px;color:#9A9A94;margin-top:3px">{{ add.selBrand }} · {{ add.selPer100 }}</div>
+            </div>
+          </div>
+
+          <div style="font-family:'Space Mono',monospace;font-size:10px;font-weight:700;letter-spacing:2px;color:#8A8A85;margin-bottom:8px">QUANTITÉ</div>
+          <div style="display:flex;align-items:stretch;gap:10px;margin-bottom:18px">
+            <button onClick="{{ add.qtyDec }}" style="width:52px;border:3px solid #0A0A0A;background:#fff;font-family:Anton;font-size:26px;cursor:pointer;border-radius:2px" style-active="background:#EDEDE9">−</button>
+            <div style="flex:1;display:flex;align-items:center;border:3px solid #0A0A0A;background:#fff;border-radius:2px;padding:0 14px">
+              <input type="number" value="{{ add.qty }}" onChange="{{ add.onQtySet }}" style="flex:1;border:none;background:transparent;font-family:Anton;font-size:30px;width:100%" />
+              <span style="font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:#9A9A94">g</span>
+            </div>
+            <button onClick="{{ add.qtyInc }}" style="width:52px;border:3px solid #0A0A0A;background:#C6FF00;font-family:Anton;font-size:26px;cursor:pointer;border-radius:2px" style-active="background:#B0E600">+</button>
+          </div>
+
+          <div style="display:flex;gap:12px;margin-bottom:20px">
+            <div style="flex:1;border:3px solid #0A0A0A;background:#fff;border-radius:2px;padding:12px">
+              <div style="font-family:'Space Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1px;color:#8A8A85;margin-bottom:4px">APPORT CALORIQUE</div>
+              <div style="font-family:Anton;font-size:34px;line-height:.9">{{ add.pKcal }}<span style="font-family:'Space Mono',monospace;font-size:11px;color:#9A9A94;margin-left:3px">kcal</span></div>
+            </div>
+            <div style="flex:1;border:3px solid #0A0A0A;background:#C6FF00;border-radius:2px;padding:12px">
+              <div style="font-family:'Space Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1px;color:#0A0A0A;margin-bottom:4px">PROTÉINES</div>
+              <div style="font-family:Anton;font-size:34px;line-height:.9">{{ add.pProt }}<span style="font-family:'Space Mono',monospace;font-size:11px;margin-left:3px">g</span></div>
+            </div>
+          </div>
+
+          <button onClick="{{ add.onConfirm }}" style="width:100%;background:#0A0A0A;border:3px solid #0A0A0A;border-radius:2px;padding:16px;cursor:pointer;box-shadow:4px 4px 0 rgba(10,10,10,.2)" style-active="transform:translate(4px,4px);box-shadow:0 0 0">
+            <span style="font-family:Anton;font-size:22px;color:#C6FF00;letter-spacing:1px">{{ add.confirmLabel }}</span>
+          </button>
+        </sc-if>
+
+        <!-- MANUAL stage -->
+        <sc-if value="{{ add.isManual }}" hint-placeholder-val="{{ false }}">
+          <div style="font-family:'Space Mono',monospace;font-size:10px;font-weight:700;letter-spacing:2px;color:#8A8A85;margin-bottom:12px">SAISIE MANUELLE</div>
+          <div style="margin-bottom:12px">
+            <div style="font-weight:600;font-size:13px;margin-bottom:5px">Nom de l'aliment</div>
+            <input value="{{ add.manName }}" onChange="{{ add.onManName }}" placeholder="ex. Barre protéinée" style="width:100%;border:3px solid #0A0A0A;background:#fff;padding:11px;font-size:15px;font-weight:500;border-radius:2px" />
+          </div>
+          <div style="display:flex;gap:10px;margin-bottom:12px">
+            <div style="flex:1"><div style="font-weight:600;font-size:13px;margin-bottom:5px">Calories</div><input type="number" value="{{ add.manKcal }}" onChange="{{ add.onManKcal }}" placeholder="0" style="width:100%;border:3px solid #0A0A0A;background:#fff;padding:11px;font-family:Anton;font-size:22px;border-radius:2px" /></div>
+            <div style="flex:1"><div style="font-weight:600;font-size:13px;margin-bottom:5px">Protéines (g)</div><input type="number" value="{{ add.manProt }}" onChange="{{ add.onManProt }}" placeholder="0" style="width:100%;border:3px solid #0A0A0A;background:#fff;padding:11px;font-family:Anton;font-size:22px;border-radius:2px" /></div>
+          </div>
+          <div style="margin-bottom:20px">
+            <div style="font-weight:600;font-size:13px;margin-bottom:5px">Quantité</div>
+            <input value="{{ add.manQty }}" onChange="{{ add.onManQty }}" placeholder="ex. 1 barre · 60 g" style="width:100%;border:3px solid #0A0A0A;background:#fff;padding:11px;font-size:15px;font-weight:500;border-radius:2px" />
+          </div>
+          <button onClick="{{ add.onManConfirm }}" style="width:100%;background:#0A0A0A;border:3px solid #0A0A0A;border-radius:2px;padding:16px;cursor:pointer;box-shadow:4px 4px 0 rgba(10,10,10,.2)" style-active="transform:translate(4px,4px);box-shadow:0 0 0">
+            <span style="font-family:Anton;font-size:22px;color:#C6FF00;letter-spacing:1px">{{ add.confirmLabel }}</span>
+          </button>
+        </sc-if>
+
+      </div>
+    </div>
+    </sc-if>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:434,&quot;height&quot;:888}}">
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.FOODS = [
+      {id:'poulet', name:'Blanc de poulet', brand:'Le Gaulois', kcal:165, prot:31},
+      {id:'skyr', name:'Skyr nature', brand:'Danone', kcal:63, prot:11},
+      {id:'whey', name:'Whey Isolate Vanille', brand:'MyProtein', kcal:373, prot:90},
+      {id:'oats', name:"Flocons d'avoine", brand:'Quaker', kcal:375, prot:13},
+      {id:'riz', name:'Riz basmati cuit', brand:'Taureau Ailé', kcal:130, prot:2.7},
+      {id:'thon', name:'Thon au naturel', brand:'Petit Navire', kcal:100, prot:24},
+      {id:'banane', name:'Banane', brand:'Frais', kcal:89, prot:1.1},
+      {id:'pb', name:'Beurre de cacahuète', brand:'Prozis', kcal:600, prot:25},
+      {id:'oeuf', name:'Œufs entiers', brand:'Frais', kcal:143, prot:12.6},
+      {id:'pates', name:'Pâtes complètes cuites', brand:'Barilla', kcal:150, prot:6}
+    ];
+    this.state = {
+      screen:'today',
+      mounted:false,
+      celebrate:null,
+      confetti:[],
+      entries:[
+        {id:1, name:"Flocons d'avoine", qty:'80 g', time:'07:38', kcal:300, prot:10},
+        {id:2, name:'Lait entier', qty:'250 ml', time:'07:39', kcal:160, prot:8},
+        {id:3, name:'Banane', qty:'120 g', time:'07:41', kcal:105, prot:1},
+        {id:4, name:'Blanc de poulet', qty:'160 g', time:'12:30', kcal:265, prot:49},
+        {id:5, name:'Riz basmati', qty:'250 g', time:'12:32', kcal:325, prot:7},
+        {id:6, name:'Skyr nature', qty:'300 g', time:'16:15', kcal:180, prot:30},
+        {id:7, name:'Amandes', qty:'40 g', time:'16:16', kcal:230, prot:8},
+        {id:8, name:'Miel', qty:'50 g', time:'16:17', kcal:150, prot:0}
+      ],
+      history:[
+        {id:'d1', label:'HIER', date:'lun. 14 juil.', kcal:2910, prot:182},
+        {id:'d2', label:'DIM.', date:'dim. 13 juil.', kcal:2510, prot:150},
+        {id:'d3', label:'SAM.', date:'sam. 12 juil.', kcal:3180, prot:176},
+        {id:'d4', label:'VEN.', date:'ven. 11 juil.', kcal:2880, prot:185},
+        {id:'d5', label:'JEU.', date:'jeu. 10 juil.', kcal:2210, prot:120},
+        {id:'d6', label:'MER.', date:'mer. 09 juil.', kcal:2960, prot:190}
+      ],
+      settings:{ poids:78, taille:181, age:27, sexe:'Homme', activiteFactor:1.45, coeffProt:2.3, surplus:12, goalKcal:2888, goalProt:180, autoGoals:true },
+      add:{ stage:'search', query:'', sel:null, qty:100, editingId:null, manName:'', manKcal:'', manProt:'', manQty:'' }
+    };
+    this._celTO=null;
+  }
+  componentDidMount(){ requestAnimationFrame(()=>this.setState({mounted:true})); }
+  componentWillUnmount(){ clearTimeout(this._celTO); }
+  componentDidUpdate(prevProps, prevState){
+    const sum=(es)=>es.reduce((a,e)=>({kcal:a.kcal+e.kcal,prot:a.prot+e.prot}),{kcal:0,prot:0});
+    const g={kcal:this.state.settings.goalKcal, prot:this.state.settings.goalProt};
+    const p=sum(prevState.entries), n=sum(this.state.entries);
+    if(p.prot/g.prot<1 && n.prot/g.prot>=1) this.celebrate('prot');
+    else if(p.kcal/g.kcal<1 && n.kcal/g.kcal>=1) this.celebrate('kcal');
+  }
+  celebrate(which){
+    const cols=['#C6FF00','#0A0A0A','#FF3B1E','#FFC400'];
+    const pieces=Array.from({length:36},(_,i)=>{
+      const tx=(Math.random()*2-1)*170, ty=140+Math.random()*420, rot=(Math.random()*2-1)*760;
+      return {id:i, style:{ position:'absolute', left:(4+Math.random()*90)+'%', top:(120+Math.random()*60)+'px',
+        width:(6+Math.random()*8)+'px', height:(11+Math.random()*10)+'px', background:cols[i%4], borderRadius:'1px',
+        '--tx':tx+'px','--ty':ty+'px','--rot':rot+'deg', animation:'confetti 1.25s ease-out forwards', animationDelay:(Math.random()*140)+'ms' } };
+    });
+    this.setState({celebrate:{which,key:Date.now()}, confetti:pieces});
+    clearTimeout(this._celTO);
+    this._celTO=setTimeout(()=>this.setState({celebrate:null, confetti:[]}), 1350);
+  }
+  calcGoals(st){
+    const bmr=10*st.poids+6.25*st.taille-5*st.age+(st.sexe==='Homme'?5:-161);
+    const tdee=bmr*st.activiteFactor;
+    return { kcal:Math.round(tdee*(1+st.surplus/100)), prot:Math.round(st.poids*st.coeffProt) };
+  }
+  num(e){ const v=parseFloat(e.target.value); return isNaN(v)?0:v; }
+  applyMeas(f,v){ this.setState(s=>{ const st={...s.settings,[f]:v}; if(st.autoGoals){const gg=this.calcGoals(st); st.goalKcal=gg.kcal; st.goalProt=gg.prot;} return {settings:st}; }); }
+  setSexe(x){ this.setState(s=>{ const st={...s.settings,sexe:x}; if(st.autoGoals){const gg=this.calcGoals(st); st.goalKcal=gg.kcal; st.goalProt=gg.prot;} return {settings:st}; }); }
+  setActivite(e){ const v=parseFloat(e.target.value); this.applyMeas('activiteFactor',v); }
+  setGoal(f,e){ const v=this.num(e); this.setState(s=>({settings:{...s.settings,[f]:v,autoGoals:false}})); }
+  toggleAuto(){ this.setState(s=>{ const st={...s.settings,autoGoals:!s.settings.autoGoals}; if(st.autoGoals){const gg=this.calcGoals(st); st.goalKcal=gg.kcal; st.goalProt=gg.prot;} return {settings:st}; }); }
+
+  openAdd(){ this.setState({screen:'add', add:{stage:'search', query:'', sel:null, qty:100, editingId:null, manName:'', manKcal:'', manProt:'', manQty:''}}); }
+  addBack(){ const st=this.state.add.stage; if(st==='detail'||st==='manual'||st==='scan') this.setState(s=>({add:{...s.add,stage:'search',sel:null,editingId:null}})); else this.setState({screen:'today'}); }
+  selectFood(f){ this.setState(s=>({add:{...s.add,stage:'detail',sel:f,qty:100}})); }
+  startScan(){ this.setState(s=>({add:{...s.add,stage:'scan'}})); setTimeout(()=>{ const f=this.FOODS[2]; this.setState(s=>({add:{...s.add,stage:'detail',sel:f,qty:30}})); },1600); }
+  openManual(){ this.setState(s=>({add:{...s.add,stage:'manual'}})); }
+  qtyStep(d){ this.setState(s=>({add:{...s.add,qty:Math.max(0,Math.round(s.add.qty+d))}})); }
+  qtySet(e){ const v=this.num(e); this.setState(s=>({add:{...s.add,qty:Math.max(0,v)}})); }
+  nowTime(){ const d=new Date(); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+  confirmAdd(){
+    const a=this.state.add, f=a.sel; if(!f) return;
+    const kcal=Math.round(f.kcal*a.qty/100), prot=Math.round(f.prot*a.qty/100);
+    const entry={id:Date.now(), name:f.name, qty:a.qty+' g', time:this.nowTime(), kcal, prot};
+    if(a.editingId){ this.setState(s=>({screen:'today', entries:s.entries.map(x=>x.id===a.editingId?entry:x)})); }
+    else { this.setState(s=>({screen:'today', entries:[...s.entries, entry]})); }
+  }
+  manSet(f,e){ const v=e.target.value; this.setState(s=>({add:{...s.add,[f]:v}})); }
+  confirmManual(){
+    const a=this.state.add;
+    const kcal=Math.round(parseFloat(a.manKcal)||0), prot=Math.round(parseFloat(a.manProt)||0);
+    if(!a.manName || (!kcal && !prot)) return;
+    const entry={id:Date.now(), name:a.manName, qty:a.manQty||'1 portion', time:this.nowTime(), kcal, prot};
+    if(a.editingId){ this.setState(s=>({screen:'today', entries:s.entries.map(x=>x.id===a.editingId?entry:x)})); }
+    else { this.setState(s=>({screen:'today', entries:[...s.entries, entry]})); }
+  }
+  deleteEntry(id){ this.setState(s=>({entries:s.entries.filter(e=>e.id!==id)})); }
+  editEntry(id){ const e=this.state.entries.find(x=>x.id===id); if(!e) return;
+    this.setState({screen:'add', add:{stage:'manual', query:'', sel:null, qty:100, editingId:id, manName:e.name, manKcal:String(e.kcal), manProt:String(e.prot), manQty:e.qty}}); }
+
+  renderVals(){
+    const S=this.state, st=S.settings;
+    const g={kcal:st.goalKcal, prot:st.goalProt};
+    const tot=S.entries.reduce((a,e)=>({kcal:a.kcal+e.kcal,prot:a.prot+e.prot}),{kcal:0,prot:0});
+    const TRACK=336, T2=284;
+    const fw=(pct,w)=> S.mounted ? Math.max(pct>0?7:0, Math.min(pct/1.30,1)*w) : 0;
+    const mkBar=(key,label,cur,goal,unit)=>{
+      const pct=goal>0?cur/goal:0;
+      return { key,label,unit, cur:Math.round(cur), goal, pctText:Math.round(pct*100)+'%',
+        fillStyle:{position:'absolute',top:0,left:0,bottom:0,overflow:'hidden',width:fw(pct,TRACK)+'px',transition:'width .95s cubic-bezier(.34,1.5,.5,1)'},
+        over:pct>=1.10, done:pct>=1&&pct<1.10, going:pct<1,
+        celebrating: !!(S.celebrate&&S.celebrate.which===key) };
+    };
+    const bars=[ mkBar('kcal','CALORIES',tot.kcal,g.kcal,'KCAL'), mkBar('prot','PROTÉINES',tot.prot,g.prot,'G') ];
+
+    const entryRows=S.entries.slice().reverse().map(e=>({ ...e, onEdit:()=>this.editEntry(e.id), onDelete:()=>this.deleteEntry(e.id) }));
+
+    const miniFill=(pct)=>({position:'absolute',top:0,left:0,bottom:0,overflow:'hidden',width:fw(pct,T2)+'px',transition:'width .9s cubic-bezier(.34,1.5,.5,1)'});
+    const historyRows=S.history.map(d=>{
+      const kp=d.kcal/g.kcal, pp=d.prot/g.prot;
+      const ok=(kp>=0.95 && kp<=1.10 && pp>=0.95);
+      return { id:d.id, label:d.label, date:d.date, ok, warn:!ok,
+        kText:d.kcal+' / '+g.kcal, pText:d.prot+' / '+g.prot+' g',
+        kFill:miniFill(kp), pFill:miniFill(pp) };
+    });
+
+    const tabDefs=[ ['today',"AUJOURD'HUI"], ['history','HISTORIQUE'], ['settings','RÉGLAGES'] ];
+    const tabs=tabDefs.map(([k,l])=>{ const active=S.screen===k;
+      return { key:k, label:l, active, onClick:()=>this.setState({screen:k}),
+        dotStyle:{width:'7px',height:'7px',background:active?'#0A0A0A':'#D0D0CB'},
+        labelStyle:{fontFamily:"'Space Mono',monospace",fontSize:'10px',fontWeight:'700',letterSpacing:'.5px',color:active?'#0A0A0A':'#B5B5B0'} }; });
+
+    // ADD vm
+    const a=S.add;
+    const q=(a.query||'').trim().toLowerCase();
+    const results=this.FOODS.filter(f=> !q || f.name.toLowerCase().includes(q) || f.brand.toLowerCase().includes(q))
+      .map(f=>({ id:f.id, name:f.name, brand:f.brand, per100:f.kcal+' kcal · '+f.prot+'g /100g', onSelect:()=>this.selectFood(f) }));
+    const sel=a.sel;
+    const pKcal=sel?Math.round(sel.kcal*a.qty/100):0;
+    const pProt=sel?Math.round(sel.prot*a.qty/100):0;
+    const add={
+      stage:a.stage, isSearch:a.stage==='search', isDetail:a.stage==='detail', isManual:a.stage==='manual', isScan:a.stage==='scan',
+      title: a.editingId?'MODIFIER': (a.stage==='detail'?'QUANTITÉ': a.stage==='manual'?'SAISIE MANUELLE': a.stage==='scan'?'SCAN':'AJOUTER'),
+      confirmLabel: a.editingId?'ENREGISTRER ✓':'AJOUTER À MA JOURNÉE',
+      query:a.query, onQuery:(e)=>this.setState(s=>({add:{...s.add,query:e.target.value}})),
+      results, noResults: results.length===0,
+      onScan:()=>this.startScan(), onManual:()=>this.openManual(), onBack:()=>this.addBack(),
+      selName: sel?sel.name:'', selBrand: sel?sel.brand:'', selPer100: sel?(sel.kcal+' kcal · '+sel.prot+'g /100g'):'',
+      qty:a.qty, qtyDec:()=>this.qtyStep(-10), qtyInc:()=>this.qtyStep(10), onQtySet:(e)=>this.qtySet(e),
+      pKcal, pProt, onConfirm:()=>this.confirmAdd(),
+      manName:a.manName, manKcal:a.manKcal, manProt:a.manProt, manQty:a.manQty,
+      onManName:(e)=>this.manSet('manName',e), onManKcal:(e)=>this.manSet('manKcal',e),
+      onManProt:(e)=>this.manSet('manProt',e), onManQty:(e)=>this.manSet('manQty',e), onManConfirm:()=>this.confirmManual()
+    };
+
+    const measRows=[
+      {label:'Poids', value:st.poids, unit:'kg', onChange:(e)=>this.applyMeas('poids',this.num(e))},
+      {label:'Taille', value:st.taille, unit:'cm', onChange:(e)=>this.applyMeas('taille',this.num(e))},
+      {label:'Âge', value:st.age, unit:'ans', onChange:(e)=>this.applyMeas('age',this.num(e))},
+      {label:'Coeff. protéines', value:st.coeffProt, unit:'g/kg', onChange:(e)=>this.applyMeas('coeffProt',this.num(e))},
+      {label:'Surplus calorique', value:st.surplus, unit:'%', onChange:(e)=>this.applyMeas('surplus',this.num(e))}
+    ];
+    const segBase='padding:9px 14px;border:none;cursor:pointer;font-weight:700;font-size:13px;';
+    const headerMeta = S.screen==='today'?'JEU. 16 JUIL.': S.screen==='history'?'BILAN':'PROFIL';
+
+    return {
+      isToday:S.screen==='today', isHistory:S.screen==='history', isSettings:S.screen==='settings', isAdd:S.screen==='add',
+      showFab: S.screen!=='add',
+      headerMeta,
+      bars, celebrateStyle:{animation: S.celebrate?'shake .5s ease':'none'},
+      celebrating: !!S.celebrate, confetti:S.confetti,
+      entryRows, entryCount:S.entries.length, noEntries:S.entries.length===0,
+      historyRows, tabs,
+      openAdd:()=>this.openAdd(), add,
+      settings:st, measRows,
+      onGoalKcal:(e)=>this.setGoal('goalKcal',e), onGoalProt:(e)=>this.setGoal('goalProt',e),
+      onToggleAuto:()=>this.toggleAuto(), autoLabel: st.autoGoals?'● AUTO':'○ MANUEL',
+      autoBtnStyle:{background:st.autoGoals?'#C6FF00':'transparent', color:st.autoGoals?'#0A0A0A':'#8A8A85', border:'2px solid '+(st.autoGoals?'#C6FF00':'#444'), fontFamily:"'Space Mono',monospace", fontWeight:'700', fontSize:'10px', letterSpacing:'1px', padding:'5px 9px', cursor:'pointer'},
+      onSexeH:()=>this.setSexe('Homme'), onSexeF:()=>this.setSexe('Femme'), onActivite:(e)=>this.setActivite(e),
+      sexeHStyle:{ padding:'9px 14px', border:'none', cursor:'pointer', fontWeight:'700', fontSize:'13px', background:st.sexe==='Homme'?'#0A0A0A':'#fff', color:st.sexe==='Homme'?'#fff':'#0A0A0A'},
+      sexeFStyle:{ padding:'9px 14px', border:'none', cursor:'pointer', fontWeight:'700', fontSize:'13px', borderLeft:'2px solid #0A0A0A', background:st.sexe==='Femme'?'#0A0A0A':'#fff', color:st.sexe==='Femme'?'#fff':'#0A0A0A'}
+    };
+  }
+}
+</script>
+</body>
+</html>

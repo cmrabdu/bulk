@@ -1,8 +1,8 @@
 """Schémas Pydantic = le contrat d'API (identique à celui donné à Claude Design)."""
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Literal, Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_serializer
 
 
 # --- Settings ---
@@ -85,6 +85,14 @@ class EntryOut(BaseModel):
     protein_g: float
     off_id: Optional[str] = None
     logged_at: datetime
+
+    @field_serializer("logged_at")
+    def _ser_logged_at(self, dt: datetime) -> str:
+        # Stocké en UTC (naïf sur SQLite) -> émettre un ISO UTC explicite avec "Z"
+        # pour que le front le convertisse correctement en heure de Paris.
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
 class EntriesOut(BaseModel):
