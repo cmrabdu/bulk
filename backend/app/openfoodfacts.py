@@ -70,13 +70,19 @@ def _normalize(p: dict) -> Optional[FoodHit]:
 
 
 async def search(q: str, page: int = 1) -> list[FoodHit]:
-    url = f"{settings.off_base}/api/v2/search"
+    # Recherche plein-texte via l'endpoint legacy cgi/search.pl : l'API v2 /search ne fait
+    # pas de full-text fiable (renvoie parfois du non-JSON). Le lookup code-barres, lui,
+    # utilise bien l'API v2 (voir barcode()).
+    url = f"{settings.off_base}/cgi/search.pl"
     params = {
         "search_terms": q,
-        "fields": FIELDS,
+        "search_simple": 1,
+        "action": "process",
+        "json": 1,
         "page_size": 20,
         "page": max(1, page),
-        "sort_by": "popularity_key",
+        "fields": FIELDS,
+        "sort_by": "unique_scans_n",  # les plus scannés d'abord (popularité)
     }
     r = await _client.get(url, params=params)
     r.raise_for_status()
