@@ -2,7 +2,7 @@
 from datetime import datetime
 from typing import Literal, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 # --- Settings ---
@@ -73,6 +73,10 @@ class EntryPatch(BaseModel):
 
 
 class EntryOut(BaseModel):
+    # from_attributes : permet de construire EntryOut directement depuis un objet ORM
+    # FoodEntry (indispensable pour EntriesOut(entries=[...ORM...]) côté GET /entries).
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     name: str
     quantity: float
