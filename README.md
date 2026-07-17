@@ -26,24 +26,24 @@ Mobile-first, self-hosted, mono-utilisateur.
 <td width="50%"><img src="design/screenshots/overshoot.png" alt="Objectif dépassé" /></td>
 </tr>
 <tr>
-<td align="center"><sub>🏠 Tableau de bord — barres gamifiées</sub></td>
-<td align="center"><sub>🚨 Dépassement d'objectif</sub></td>
+<td align="center"><sub>Tableau de bord — barres gamifiées</sub></td>
+<td align="center"><sub>Dépassement d'objectif</sub></td>
 </tr>
 </table>
 
-## ✨ Fonctionnalités
+## Fonctionnalités
 
-- 🎯 **Barres gamifiées** — remplissage animé, dégradé continu rouge → vert, marqueur d'objectif, alerte « DÉPASSÉ ! » au-delà de 110 %.
-- 🎉 **Feedback satisfaisant** — confettis + vibration quand un objectif est atteint.
-- 🔍 **Recherche OpenFoodFacts** — par nom (avec photos produits) ou **scan code-barres** caméra (ZXing), + saisie manuelle en secours.
-- ⚡ **Ajout en 2-3 taps** — quantité avec aperçu live des kcal/protéines, portion par défaut d'OFF.
-- 📓 **Journal du jour** — édition / suppression, horodatage.
-- 📅 **Historique** — bilan par jour avec indicateur ✅ / ⚠️.
-- ⚙️ **Objectifs** — calculés (Mifflin-St Jeor + facteur d'activité + surplus) ou fixés à la main.
-- 🔐 **Connexion stylisée** — cookie de session signé (mono-utilisateur).
-- 📱 **PWA** — installable sur l'écran d'accueil, mobile-first, thème sombre.
+- **Barres gamifiées** — remplissage animé, dégradé continu rouge vers vert, marqueur d'objectif, alerte « DÉPASSÉ ! » au-delà de 110 %.
+- **Feedback satisfaisant** — confettis et vibration quand un objectif est atteint.
+- **Recherche OpenFoodFacts** — par nom (avec photos produits) ou scan code-barres caméra (ZXing), plus saisie manuelle en secours.
+- **Ajout en 2-3 taps** — quantité avec aperçu live des kcal/protéines, portion par défaut d'OpenFoodFacts.
+- **Journal du jour** — édition, suppression, horodatage.
+- **Historique** — bilan par jour avec indicateur atteint / raté.
+- **Objectifs** — calculés (Mifflin-St Jeor + facteur d'activité + surplus) ou fixés à la main.
+- **Connexion stylisée** — cookie de session signé (mono-utilisateur).
+- **PWA** — installable sur l'écran d'accueil, mobile-first, thème sombre.
 
-## 🧱 Stack
+## Stack
 
 | Couche | Techno |
 |---|---|
@@ -53,7 +53,7 @@ Mobile-first, self-hosted, mono-utilisateur.
 | **Données** | OpenFoodFacts (recherche + code-barres) |
 | **Déploiement** | Docker + Docker Compose |
 
-## 🏗️ Architecture
+## Architecture
 
 ```
                     ┌─────────── Caddy (HTTPS) ───────────┐
@@ -71,7 +71,7 @@ deploy/     DEPLOY.md + snippet Caddy
 design/     export Claude Design (.dc.html) + captures
 ```
 
-## 🚀 Démarrage rapide
+## Démarrage rapide
 
 ```bash
 git clone https://github.com/cmrabdu/bulk.git && cd bulk
@@ -91,7 +91,7 @@ cd frontend && npm install && npm run dev
 ```
 Tests backend : `cd backend && pytest`.
 
-## 🔌 API (aperçu)
+## API (aperçu)
 
 ```
 POST   /api/auth/login          GET  /api/settings   ·  PUT /api/settings
@@ -101,18 +101,18 @@ GET    /api/summary/today       GET  /api/history
 GET    /api/fitbit/status       (stub V1)
 ```
 
-## 🎨 Design
+## Design
 
 Direction **néobrutaliste** : Anton / Archivo / Space Mono, aplats noirs, accent citron
 `#C6FF00`, bordures 3 px et ombres dures. Conçu avec Claude Design (source dans
 [`design/`](design/)) puis porté fidèlement en React.
 
-## 🗺️ Roadmap
+## Roadmap
 
 - [ ] OAuth Fitbit (TDEE réel du jour) — endpoints déjà en place.
 - [ ] Autres macros (lipides / glucides).
 - [ ] Graphes de tendance.
 
-## 📄 Licence
+## Licence
 
 [MIT](LICENSE) © cmrabdu
