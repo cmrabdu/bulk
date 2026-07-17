@@ -18,18 +18,23 @@ export default function BarcodeScanner({
     let controls: { stop: () => void } | undefined
     let done = false
 
+    // facingMode: environment -> caméra ARRIÈRE (indispensable pour scanner un produit).
     reader
-      .decodeFromVideoDevice(undefined, videoRef.current!, (result) => {
-        if (result && !done) {
-          done = true
-          onDetected(result.getText())
-          try {
-            controls?.stop()
-          } catch {
-            /* noop */
+      .decodeFromConstraints(
+        { audio: false, video: { facingMode: { ideal: 'environment' } } },
+        videoRef.current!,
+        (result) => {
+          if (result && !done) {
+            done = true
+            onDetected(result.getText())
+            try {
+              controls?.stop()
+            } catch {
+              /* noop */
+            }
           }
-        }
-      })
+        },
+      )
       .then((c) => {
         controls = c
       })
@@ -49,6 +54,7 @@ export default function BarcodeScanner({
   return (
     <video
       ref={videoRef}
+      autoPlay
       muted
       playsInline
       style={{ width: '100%', height: '100%', objectFit: 'cover' }}

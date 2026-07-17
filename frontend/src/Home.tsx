@@ -43,6 +43,14 @@ type Piece = { id: number; style: CSSProperties }
 const GRAD = 'linear-gradient(90deg,#FF2D2D 0%,#FF6A00 20%,#FFC400 42%,#C6FF00 60%,#C6FF00 82%,#FF3B1E 91%,#C00000 100%)'
 const emptyAdd: AddState = { stage: 'search', query: '', sel: null, qty: 100, editingId: null, manName: '', manKcal: '', manProt: '', manQty: '' }
 
+// Icônes de la barre d'onglets (SVG, sans dépendance).
+function TabIcon({ name, color }: { name: Screen; color: string }) {
+  const p = { width: 23, height: 23, viewBox: '0 0 24 24', fill: 'none', stroke: color, strokeWidth: 2.3, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const }
+  if (name === 'today') return <svg {...p}><path d="M4 11l7-7a1.4 1.4 0 0 1 2 0l7 7" /><path d="M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9" /></svg>
+  if (name === 'history') return <svg {...p}><rect x="4" y="5" width="16" height="16" rx="1.5" /><path d="M4 9.5h16M8.5 3v4M15.5 3v4" /></svg>
+  return <svg {...p}><path d="M4 8h9M18 8h2M4 16h2M11 16h9" /><circle cx="15.5" cy="8" r="2.3" fill={color} stroke="none" /><circle cx="8.5" cy="16" r="2.3" fill={color} stroke="none" /></svg>
+}
+
 export default function Home() {
   const { logout } = useAuth()
   const [screen, setScreen] = useState<Screen>('today')
@@ -170,7 +178,11 @@ export default function Home() {
   }
   const selectFood = (h: FoodHit) =>
     setAdd((a) => ({ ...a, stage: 'detail', sel: { name: h.name, brand: h.brand, kcal: h.per_100g.kcal, prot: h.per_100g.protein_g, off_id: h.off_id }, qty: Math.round(h.serving_size_g || 100) }))
-  const startScan = () => { setScanMsg(''); setAdd((a) => ({ ...a, stage: 'scan' })) }
+  const startScan = () => {
+    ;(document.activeElement as HTMLElement | null)?.blur() // ferme le clavier avant d'ouvrir la caméra
+    setScanMsg('')
+    setAdd((a) => ({ ...a, stage: 'scan' }))
+  }
   async function onScanDetected(code: string) {
     try {
       const h = await api.barcode(code)
@@ -246,7 +258,7 @@ export default function Home() {
     <div className="stage">
       <div className="phone">
         {/* HEADER */}
-        <div style={css('height:52px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:3px solid #0A0A0A;background:#fff;z-index:20')}>
+        <div style={css('height:calc(52px + env(safe-area-inset-top));flex:none;display:flex;align-items:center;justify-content:space-between;padding:env(safe-area-inset-top) 16px 0;border-bottom:3px solid #0A0A0A;background:#fff;z-index:20')}>
           <div style={css('display:flex;align-items:center;gap:8px')}>
             <div style={css('width:15px;height:15px;background:#C6FF00;border:2px solid #0A0A0A')} />
             <span style={css('font-family:Anton;font-size:26px;letter-spacing:.5px;line-height:1')}>BULK</span>
@@ -381,14 +393,14 @@ export default function Home() {
                   <div style={css('flex:1')}>
                     <div style={css(`font-family:'Space Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1px;color:#8A8A85;margin-bottom:4px`)}>CALORIES</div>
                     <div style={css('display:flex;align-items:baseline;gap:4px')}>
-                      <input type="number" value={goalKcal} onChange={setGoalKcal} style={css('width:96px;background:transparent;border:none;border-bottom:2px solid #444;font-family:Anton;font-size:38px;color:#fff;padding:0')} />
+                      <input type="number" inputMode="numeric" className="big-num" value={goalKcal} onChange={setGoalKcal} style={css('width:96px;background:transparent;border:none;border-bottom:2px solid #444;font-family:Anton;font-size:38px;color:#fff;padding:0')} />
                       <span style={css(`font-family:'Space Mono',monospace;font-size:10px;color:#8A8A85`)}>KCAL</span>
                     </div>
                   </div>
                   <div style={css('flex:1')}>
                     <div style={css(`font-family:'Space Mono',monospace;font-size:9px;font-weight:700;letter-spacing:1px;color:#8A8A85;margin-bottom:4px`)}>PROTÉINES</div>
                     <div style={css('display:flex;align-items:baseline;gap:4px')}>
-                      <input type="number" value={goalProt} onChange={setGoalProt} style={css('width:64px;background:transparent;border:none;border-bottom:2px solid #444;font-family:Anton;font-size:38px;color:#fff;padding:0')} />
+                      <input type="number" inputMode="numeric" className="big-num" value={goalProt} onChange={setGoalProt} style={css('width:64px;background:transparent;border:none;border-bottom:2px solid #444;font-family:Anton;font-size:38px;color:#fff;padding:0')} />
                       <span style={css(`font-family:'Space Mono',monospace;font-size:10px;color:#8A8A85`)}>G</span>
                     </div>
                   </div>
@@ -434,18 +446,18 @@ export default function Home() {
 
         {/* FAB — seulement sur Aujourd'hui (éviter le chevauchement du contenu ailleurs) */}
         {screen === 'today' && (
-          <button onClick={openAdd} className="fabpress" style={css('position:absolute;right:18px;bottom:82px;width:64px;height:64px;background:#C6FF00;border:3px solid #0A0A0A;border-radius:3px;box-shadow:5px 5px 0 #0A0A0A;cursor:pointer;z-index:40;display:flex;align-items:center;justify-content:center;transition:transform .08s,box-shadow .08s')}>
+          <button onClick={openAdd} className="fabpress" style={css('position:absolute;right:18px;bottom:calc(82px + env(safe-area-inset-bottom));width:64px;height:64px;background:#C6FF00;border:3px solid #0A0A0A;border-radius:3px;box-shadow:5px 5px 0 #0A0A0A;cursor:pointer;z-index:40;display:flex;align-items:center;justify-content:center;transition:transform .08s,box-shadow .08s')}>
             <span style={css('font-family:Anton;font-size:46px;line-height:.7;color:#0A0A0A;margin-top:-3px')}>+</span>
           </button>
         )}
 
         {/* TAB BAR */}
-        <div style={css('height:66px;flex:none;display:flex;border-top:3px solid #0A0A0A;background:#fff;z-index:30')}>
+        <div style={css('height:calc(66px + env(safe-area-inset-bottom));flex:none;display:flex;padding-bottom:env(safe-area-inset-bottom);border-top:3px solid #0A0A0A;background:#fff;z-index:30')}>
           {tabs.map((t) => {
             const active = screen === t.key
             return (
-              <button key={t.key} onClick={() => setScreen(t.key)} style={css('flex:1;background:transparent;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:0;position:relative')}>
-                <div style={{ ...css('width:7px;height:7px'), background: active ? '#0A0A0A' : '#D0D0CB' }} />
+              <button key={t.key} onClick={() => setScreen(t.key)} style={css('flex:1;background:transparent;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:0;position:relative')}>
+                <TabIcon name={t.key} color={active ? '#0A0A0A' : '#B5B5B0'} />
                 <span style={{ ...css(`font-family:'Space Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.5px`), color: active ? '#0A0A0A' : '#B5B5B0' }}>{t.label}</span>
                 {active && <div style={css('position:absolute;top:0;left:22%;right:22%;height:4px;background:#C6FF00')} />}
               </button>
@@ -474,7 +486,7 @@ export default function Home() {
                 <>
                   <div style={css('display:flex;align-items:center;border:3px solid #0A0A0A;background:#fff;border-radius:2px;padding:0 12px;height:50px;margin-bottom:12px')}>
                     <span style={css(`font-family:'Space Mono',monospace;font-weight:700;color:#0A0A0A;margin-right:8px`)}>⌕</span>
-                    <input autoFocus value={add.query} onChange={(e) => setAdd((a) => ({ ...a, query: e.target.value }))} placeholder="Rechercher un aliment…" style={css('flex:1;border:none;background:transparent;font-size:15px;font-weight:500;height:100%')} />
+                    <input value={add.query} onChange={(e) => setAdd((a) => ({ ...a, query: e.target.value }))} placeholder="Rechercher un aliment…" enterKeyHint="search" style={css('flex:1;border:none;background:transparent;font-size:15px;font-weight:500;height:100%')} />
                   </div>
                   <button onClick={startScan} className="press-y" style={css('width:100%;display:flex;align-items:center;gap:12px;background:#0A0A0A;border:3px solid #0A0A0A;border-radius:2px;padding:14px;cursor:pointer;margin-bottom:8px')}>
                     <div style={css('width:34px;height:26px;background:repeating-linear-gradient(90deg,#C6FF00 0 2px,transparent 2px 4px,#C6FF00 4px 5px,transparent 5px 8px);border:2px solid #C6FF00')} />
@@ -538,7 +550,7 @@ export default function Home() {
                   <div style={css('display:flex;align-items:stretch;gap:10px;margin-bottom:18px')}>
                     <button onClick={() => qtyStep(-10)} className="press-dark" style={css('width:52px;border:3px solid #0A0A0A;background:#fff;font-family:Anton;font-size:26px;cursor:pointer;border-radius:2px')}>−</button>
                     <div style={css('flex:1;display:flex;align-items:center;border:3px solid #0A0A0A;background:#fff;border-radius:2px;padding:0 14px')}>
-                      <input type="number" value={add.qty} onChange={(e) => setAdd((a) => ({ ...a, qty: Math.max(0, num(e)) }))} style={css('flex:1;border:none;background:transparent;font-family:Anton;font-size:30px;width:100%')} />
+                      <input type="number" inputMode="numeric" className="big-num" value={add.qty} onChange={(e) => setAdd((a) => ({ ...a, qty: Math.max(0, num(e)) }))} style={css('flex:1;border:none;background:transparent;font-family:Anton;font-size:30px;width:100%')} />
                       <span style={css(`font-family:'Space Mono',monospace;font-size:13px;font-weight:700;color:#9A9A94`)}>g</span>
                     </div>
                     <button onClick={() => qtyStep(10)} className="press-lime2" style={css('width:52px;border:3px solid #0A0A0A;background:#C6FF00;font-family:Anton;font-size:26px;cursor:pointer;border-radius:2px')}>+</button>
@@ -570,11 +582,11 @@ export default function Home() {
                   <div style={css('display:flex;gap:10px;margin-bottom:12px')}>
                     <div style={css('flex:1')}>
                       <div style={css('font-weight:600;font-size:13px;margin-bottom:5px')}>Calories</div>
-                      <input type="number" value={add.manKcal} onChange={(e) => setAdd((a) => ({ ...a, manKcal: e.target.value }))} placeholder="0" style={css('width:100%;border:3px solid #0A0A0A;background:#fff;padding:11px;font-family:Anton;font-size:22px;border-radius:2px')} />
+                      <input type="number" inputMode="numeric" className="big-num" value={add.manKcal} onChange={(e) => setAdd((a) => ({ ...a, manKcal: e.target.value }))} placeholder="0" style={css('width:100%;border:3px solid #0A0A0A;background:#fff;padding:11px;font-family:Anton;font-size:22px;border-radius:2px')} />
                     </div>
                     <div style={css('flex:1')}>
                       <div style={css('font-weight:600;font-size:13px;margin-bottom:5px')}>Protéines (g)</div>
-                      <input type="number" value={add.manProt} onChange={(e) => setAdd((a) => ({ ...a, manProt: e.target.value }))} placeholder="0" style={css('width:100%;border:3px solid #0A0A0A;background:#fff;padding:11px;font-family:Anton;font-size:22px;border-radius:2px')} />
+                      <input type="number" inputMode="numeric" className="big-num" value={add.manProt} onChange={(e) => setAdd((a) => ({ ...a, manProt: e.target.value }))} placeholder="0" style={css('width:100%;border:3px solid #0A0A0A;background:#fff;padding:11px;font-family:Anton;font-size:22px;border-radius:2px')} />
                     </div>
                   </div>
                   <div style={css('margin-bottom:20px')}>

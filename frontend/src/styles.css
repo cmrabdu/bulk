@@ -5,12 +5,20 @@
    ============================================================ */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+html { -webkit-text-size-adjust: 100%; }
+* { -webkit-tap-highlight-color: transparent; }
+
 body {
   margin: 0;
   background: #E4E4E0;
   font-family: Archivo, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
 }
+
+/* iOS Safari zoome au focus si un champ fait moins de 16px et ne dézoome jamais.
+   On force 16px sur tous les champs de saisie ; les gros chiffres (Anton) sont exclus. */
+input:not(.big-num), select, textarea { font-size: 16px !important; }
 a { color: #0A0A0A; text-decoration: none; }
 a:hover { color: #0A0A0A; }
 input, select, button { font-family: inherit; color: #0A0A0A; }
